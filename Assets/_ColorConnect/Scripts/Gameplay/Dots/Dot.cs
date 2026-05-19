@@ -3,7 +3,7 @@ using UnityEngine;
 public class Dot : MonoBehaviour
 {
     [SerializeField] private Color color;
-    [SerializeField] private GameObject line;
+    public LineRenderer Line {  get; set; }
 
     private SpriteRenderer spriteRenderer;
 
@@ -19,11 +19,6 @@ public class Dot : MonoBehaviour
         {
            spriteRenderer.color = color;
         }
-    }
-
-    public void SetLine(GameObject newLine)
-    {
-        line = newLine;
     }
 
     public Color GetColor()

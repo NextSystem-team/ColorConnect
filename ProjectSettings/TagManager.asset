@@ -6,6 +6,7 @@ TagManager:
   tags:
   - DotOut
   - DotIn
+  - Line
   layers:
   - Default
   - TransparentFX

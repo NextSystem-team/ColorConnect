@@ -1,3 +1,4 @@
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour
@@ -25,6 +26,18 @@ public class GridManager : MonoBehaviour
                 Vector2Int currentTilePosition = new(x, y);
                 gridData[x, y] = new CellData(currentTilePosition);
                 //Cria uma célula na posição atual do grid
+
+                if (x == 0 && y == 0)
+                {
+                    GameObject dotOut = Instantiate(dotOutPrefab);
+                    dotOut.transform.parent = transform;
+                    dotOut.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
+                }else if (x == rows-1 && y == columns-1)
+                {
+                    GameObject dotIn = Instantiate(dotInPrefab);
+                    dotIn.transform.parent = transform;
+                    dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
+                }
             }
         }
 
@@ -43,9 +56,11 @@ public class GridManager : MonoBehaviour
             ((rows - 1) * Grid.cellGap.y);
 
         Vector3 gridCenterOffset = new Vector3(
-            gridWidth / 2f - Grid.cellSize.x / 2f, //Calcula o deslocamento horizontal para centralizar a grade (2f - grid.cellSize.x: serve para poder centralizar de verdade o "pivot" da célula)
-            gridHeight / 2f - Grid.cellSize.y / 2f,
+            gridWidth / 2f, //Calcula o deslocamento horizontal para centralizar a grade. 
+            gridHeight / 2f,
             0f
+
+            //(2f - grid.cellSize.x) serve para poder centralizar de verdade o "pivot" da célula)
         );
 
         transform.position = -gridCenterOffset; //Move o grid toda para trás considerando o tamanho das células
@@ -62,7 +77,7 @@ public class GridManager : MonoBehaviour
             ((rows - 1) * Grid.cellGap.y);
 
         float screenRatio =
-            (float)Screen.width / Screen.height; //Pega o centro da tela
+            (float)UnityEngine.Device.Screen.width / UnityEngine.Device.Screen.height; //Pega o centro da tela
 
         float targetHeight =
             gridHeight / 2f; //Diz onde é pra centralizar verticalmente

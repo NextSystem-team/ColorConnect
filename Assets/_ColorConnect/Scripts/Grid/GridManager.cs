@@ -10,12 +10,12 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject dotOutPrefab;
     [SerializeField] private GameObject dotInPrefab;
 
-    private Grid grid;
+    public Grid Grid { get; private set; }
     private CellData[,] gridData; //posições do grid
 
     private void Start()
     {
-        grid = GetComponent<Grid>();
+        Grid = GetComponent<Grid>();
         gridData = new CellData[columns, rows];
 
         for (int y = 0; y < rows; y++) //coordenada Y
@@ -35,16 +35,16 @@ public class GridManager : MonoBehaviour
     private void CenterGrid()
     {
         float gridWidth =
-            (columns * grid.cellSize.x) + //Calcula a largura total da célula
-            ((columns - 1) * grid.cellGap.x); //Calcula a largura total dos espaços entre as células
+            (columns * Grid.cellSize.x) + //Calcula a largura total da célula
+            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaços entre as células
 
         float gridHeight = 
-            (rows * grid.cellSize.y) +
-            ((rows - 1) * grid.cellGap.y);
+            (rows * Grid.cellSize.y) +
+            ((rows - 1) * Grid.cellGap.y);
 
         Vector3 gridCenterOffset = new Vector3(
-            gridWidth / 2f - grid.cellSize.x / 2f, //Calcula o deslocamento horizontal para centralizar a grade (2f - grid.cellSize.x: serve para poder centralizar de verdade o "pivot" da célula)
-            gridHeight / 2f - grid.cellSize.y / 2f,
+            gridWidth / 2f - Grid.cellSize.x / 2f, //Calcula o deslocamento horizontal para centralizar a grade (2f - grid.cellSize.x: serve para poder centralizar de verdade o "pivot" da célula)
+            gridHeight / 2f - Grid.cellSize.y / 2f,
             0f
         );
 
@@ -54,12 +54,12 @@ public class GridManager : MonoBehaviour
     public void FitGridInCamera()
     {
         float gridWidth =
-            (columns * grid.cellSize.x) + //Calcula a largura total da célula
-            ((columns - 1) * grid.cellGap.x); //Calcula a largura total dos espaços entre as células
+            (columns * Grid.cellSize.x) + //Calcula a largura total da célula
+            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaços entre as células
 
         float gridHeight =
-            (rows * grid.cellSize.y) +
-            ((rows - 1) * grid.cellGap.y);
+            (rows * Grid.cellSize.y) +
+            ((rows - 1) * Grid.cellGap.y);
 
         float screenRatio =
             (float)Screen.width / Screen.height; //Pega o centro da tela
@@ -79,11 +79,33 @@ public class GridManager : MonoBehaviour
         //Ele escolhe o maior valor entre targetHeight e targetWidth para garantir que ambos os eixos sejam adequadamente ajustados.
     }
 
+    public CellData GetCellData(Vector2Int gridPosition)
+    {
+        if (gridPosition.x < 0 || gridPosition.x >= columns ||
+            gridPosition.y < 0 || gridPosition.y >= rows)
+        {
+            return null; // Retorna null se a posição estiver fora dos limites do grid
+        }
+
+        return gridData[gridPosition.x, gridPosition.y];
+    }
+
+    public CellData[] GetAdjacentCellData(Vector2Int gridPosition)
+    {
+        CellData[] adjacentCells = new CellData[4];
+        adjacentCells[0] = GetCellData(new Vector2Int(gridPosition.x, gridPosition.y + 1)); // Cima
+        adjacentCells[1] = GetCellData(new Vector2Int(gridPosition.x, gridPosition.y - 1)); // Baixo
+        adjacentCells[2] = GetCellData(new Vector2Int(gridPosition.x - 1, gridPosition.y)); // Esquerda
+        adjacentCells[3] = GetCellData(new Vector2Int(gridPosition.x + 1, gridPosition.y)); // Direita
+
+        return adjacentCells;
+    }
+
     //Debug pré assets
     private void OnDrawGizmos()
     {
-        if (grid == null)
-            grid = GetComponent<Grid>();
+        if (Grid == null)
+            Grid = GetComponent<Grid>();
 
         if (gridData == null) return;
 
@@ -92,9 +114,9 @@ public class GridManager : MonoBehaviour
             for (int x = 0; x < columns; x++)
             {
                 Vector3 worldPosition =
-                    grid.CellToWorld(
+                    Grid.CellToWorld(
                         new Vector3Int(x, y, 0)
-                    ) + (grid.cellSize / 2f);
+                    ) + (Grid.cellSize / 2f);
 
                 Gizmos.color =
                     gridData[x, y].isPassable
@@ -103,7 +125,7 @@ public class GridManager : MonoBehaviour
 
                 Gizmos.DrawCube(
                     worldPosition,
-                    grid.cellSize * 0.9f
+                    Grid.cellSize * 0.9f
                 );
             }
         }

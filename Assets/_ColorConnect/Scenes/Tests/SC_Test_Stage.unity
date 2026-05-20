@@ -411,6 +411,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 767887861}
+  - component: {fileID: 767887862}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -434,6 +435,18 @@ Transform:
   - {fileID: 2053283338}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &767887862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767887860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c2e66216e013444b83e6a928b6da2bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageManager
 --- !u!1 &2053283337
 GameObject:
   m_ObjectHideFlags: 0
@@ -481,6 +494,7 @@ MonoBehaviour:
   mainCamera: {fileID: 519420031}
   grid: {fileID: 479862140}
   linePrefab: {fileID: 6164050028336002284, guid: 086838d7ee71aed4889c0d51f63965f5, type: 3}
+  stageManager: {fileID: 767887862}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

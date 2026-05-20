@@ -12,6 +12,8 @@ public class LineManager : MonoBehaviour
     private CellData currentCell;
     private CellData[] currentAdjacentCells;
     private List<CellData> cellsPassed;
+
+    [SerializeField] private StageManager stageManager;
     
     private void Update() 
     { 
@@ -72,27 +74,25 @@ public class LineManager : MonoBehaviour
                 currentLine.SetPosition(currentLine.positionCount - 1, grid.Grid.GetCellCenterWorld(gridPosition));
 
                 cell.lines.Add(currentLine);
+                GameObject cellObject = cell.containedObject;
 
-                Collider2D hit = Physics2D.OverlapPoint(worldPoint);
-                print(hit);
-                if (hit)
+                if (cellObject && cellObject.CompareTag("DotIn"))
                 {
-                    if (hit.transform.CompareTag("DotIn"))
+                    print("DotIn encontrado");
+
+                    Dot dotIn = cell.containedObject.GetComponent<Dot>();
+
+                    if (dotIn.GetColor() == currentColor)
                     {
-                        print("DotIn encontrado");
+                        dotIn.Line = currentLine;
 
-                        Dot dotIn = hit.GetComponent<Dot>();
+                        currentLine = null;
+                        currentColor = default;
+                        cellsPassed = new List<CellData>();
+                        currentCell = null;
+                        currentAdjacentCells = null;
 
-                        if (dotIn.GetColor() == currentColor)
-                        {
-                            dotIn.Line = currentLine;
-
-                            currentLine = null;
-                            currentColor = default;
-                            cellsPassed = new List<CellData>();
-                            currentCell = null;
-                            currentAdjacentCells = null;
-                        }
+                        stageManager.dotsConnected++;
                     }
                 }
                 else

@@ -2,11 +2,16 @@ using UnityEngine;
 
 public class BridgeObject : _CellObject
 {
-    enum Direction { Vertical, Horizontal }
-    [SerializeField] Direction direction;
+    public enum Direction { Vertical, Horizontal }
+    public Direction direction;
 
     public override bool OnLineEnter(LineManager line)
     {
-        return false;
+        bool canContinueLine;
+
+        line.EnterBridge(this);
+
+        canContinueLine = false;
+        return canContinueLine;
     }
 }

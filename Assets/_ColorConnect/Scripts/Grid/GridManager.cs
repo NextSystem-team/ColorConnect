@@ -10,6 +10,7 @@ public class GridManager : MonoBehaviour
 
     [SerializeField] private GameObject dotOutPrefab;
     [SerializeField] private GameObject dotInPrefab;
+    [SerializeField] private GameObject bridgePrefab;
 
     public Grid Grid { get; private set; }
     private CellData[,] gridData; //posições do grid
@@ -37,7 +38,8 @@ public class GridManager : MonoBehaviour
                     GameObject dotIn = Instantiate(dotInPrefab);
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
-                    //gridData[x, y].containedObject = dotIn;
+                    dotIn.GetComponent<_CellObject>().cell = gridData[x, y];
+                    gridData[x, y].containedObject = dotIn.GetComponent<_CellObject>();
                 }
                 else if (x == rows - 1 && y == columns - 4)
                 {
@@ -45,13 +47,21 @@ public class GridManager : MonoBehaviour
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotIn.GetComponent<Dot>().SetColor(Color.blue);
-                    //gridData[x, y].containedObject = dotIn;
+                    dotIn.GetComponent<_CellObject>().cell = gridData[x, y];
+                    gridData[x, y].containedObject = dotIn.GetComponent<_CellObject>();
                 } else if (x == 3 && y == 0)
                 {
                     GameObject dotOut = Instantiate(dotOutPrefab);
                     dotOut.transform.parent = transform;
                     dotOut.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotOut.GetComponent<Dot>().SetColor(Color.blue);
+                } else if (x == 4 && y == 4)
+                {
+                    GameObject bridge = Instantiate(bridgePrefab);
+                    bridge.transform.parent = transform;
+                    bridge.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
+                    bridge.GetComponent<_CellObject>().cell = gridData[x, y];
+                    gridData[x, y].containedObject = bridge.GetComponent<_CellObject>();
                 }
             }
         }

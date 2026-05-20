@@ -4,7 +4,7 @@ using UnityEngine;
 public class LineManager : MonoBehaviour 
 { 
     [SerializeField] private Camera mainCamera; 
-    [SerializeField] private GridManager grid;
+    [SerializeField] private GridManager gridManager;
     [SerializeField] private LineRenderer linePrefab;
     
     private LineRenderer currentLine; 
@@ -12,6 +12,8 @@ public class LineManager : MonoBehaviour
     private CellData currentCell;
     private CellData[] currentAdjacentCells;
     private List<CellData> cellsPassed;
+
+    private bool inBridge = false;
 
     [SerializeField] private StageManager stageManager;
     
@@ -39,10 +41,10 @@ public class LineManager : MonoBehaviour
                     {
                         currentColor = dotOut.GetColor();
 
-                        Vector2Int gridPosition = new(grid.Grid.WorldToCell(worldPoint).x, grid.Grid.WorldToCell(worldPoint).y);
-                        CellData starterCell = grid.GetCellData(gridPosition);
+                        Vector2Int gridPosition = new(gridManager.Grid.WorldToCell(worldPoint).x, gridManager.Grid.WorldToCell(worldPoint).y); 
+                        CellData starterCell = gridManager.GetCellData(gridPosition);
                      
-                        currentAdjacentCells = grid.GetAdjacentCellData(gridPosition);
+                        currentAdjacentCells = gridManager.GetAdjacentCellData(gridPosition);
 
                         currentLine = StartLine(currentColor, gridPosition, transform);
                         dotOut.Line = currentLine;
@@ -59,10 +61,10 @@ public class LineManager : MonoBehaviour
         else if (touch.phase == TouchPhase.Moved && currentLine != null) 
         { 
             Vector2 worldPoint = mainCamera.ScreenToWorldPoint(touch.position);
-            Vector3Int gridPosition = grid.Grid.WorldToCell(worldPoint);
+            Vector3Int gridPosition = gridManager.Grid.WorldToCell(worldPoint);
 
             int currentCellIndex = cellsPassed.IndexOf(currentCell);
-            CellData cell = grid.GetCellData(new Vector2Int(gridPosition.x, gridPosition.y));
+            CellData cell = gridManager.GetCellData(new Vector2Int(gridPosition.x, gridPosition.y));
 
             if (cell == null) return;
 
@@ -70,38 +72,26 @@ public class LineManager : MonoBehaviour
                 !cell.lines.Contains(currentLine) && 
                 currentAdjacentCells.Contains(cell)) 
             {
-                currentLine.positionCount++;
-                currentLine.SetPosition(currentLine.positionCount - 1, grid.Grid.GetCellCenterWorld(gridPosition));
-
-                cell.lines.Add(currentLine);
                 _CellObject cellObject = cell.containedObject;
 
-                if (cellObject && cellObject.CompareTag("DotIn"))
+                if (cellObject)
                 {
-                    print("DotIn encontrado");
-
-                    Dot dotIn = cell.containedObject.GetComponent<Dot>();
-
-                    if (dotIn.GetColor() == currentColor)
+                    if (cell.containedObject.OnLineEnter(this))
                     {
-                        dotIn.Line = currentLine;
-
-                        currentLine = null;
-                        currentColor = default;
-                        cellsPassed = new List<CellData>();
-                        currentCell = null;
-                        currentAdjacentCells = null;
-
-                        stageManager.dotsConnected++;
+                        ContinueLine(currentLine, gridManager.Grid.GetCellCenterWorld(gridPosition), cell);
                     }
                 }
                 else
                 {
+                    ContinueLine(currentLine, gridManager.Grid.GetCellCenterWorld(gridPosition), cell);
+                }
+
+                if (currentCell != null)
+                {
                     cellsPassed.Add(cell);
                     currentCell = cell;
-                    currentAdjacentCells = grid.GetAdjacentCellData(cell.gridPosition);
+                    currentAdjacentCells = gridManager.GetAdjacentCellData(cell.gridPosition);
                 }
-                
             }
             else if (cell != currentCell && 
                      currentAdjacentCells.Contains(cell) && 
@@ -113,7 +103,7 @@ public class LineManager : MonoBehaviour
                 cellsPassed.Remove(currentCell);
 
                 currentCell = cell;
-                currentAdjacentCells = grid.GetAdjacentCellData(cell.gridPosition);
+                currentAdjacentCells = gridManager.GetAdjacentCellData(cell.gridPosition);
             }
 
         } 
@@ -140,7 +130,7 @@ public class LineManager : MonoBehaviour
     private LineRenderer StartLine(Color color, Vector2Int startPosition, Transform parent)
     {
         Vector3Int starterCellCenter = new(startPosition.x, startPosition.y, 0);
-        Vector3 lineStartPosition = grid.Grid.GetCellCenterWorld(starterCellCenter);
+        Vector3 lineStartPosition = gridManager.Grid.GetCellCenterWorld(starterCellCenter);
 
         LineRenderer newLine = Instantiate(linePrefab);
         newLine.transform.parent = parent;
@@ -151,5 +141,77 @@ public class LineManager : MonoBehaviour
         newLine.SetPosition(0, lineStartPosition);
 
         return newLine;
+    }
+
+    public void ContinueLine(LineRenderer line, Vector3 newPosition, CellData cell) {
+        line.positionCount++;
+        line.SetPosition(line.positionCount - 1, newPosition);
+
+        cell.lines.Add(line);
+    }
+
+    private void ResetLine()
+    {
+        currentLine = null;
+        currentColor = default;
+        cellsPassed = new List<CellData>();
+        currentCell = null;
+        currentAdjacentCells = null;
+    }
+
+    public void EnterDotIn(DotInObject dotInObject)
+    {
+        print("DotIn encontrado");
+
+        Dot dotIn = dotInObject.GetComponent<Dot>();
+
+        if (dotIn.GetColor() == currentColor)
+        {
+            ContinueLine(currentLine, CellPositionToVector3(dotInObject.cell.gridPosition), dotInObject.cell);
+
+            dotIn.Line = currentLine;
+
+            ResetLine();
+
+            stageManager.dotsConnected++;
+        }
+    }
+
+    public void EnterBridge(BridgeObject bridgeObject)
+    {
+        print(bridgeObject.direction);
+        print(GetDirection(bridgeObject, currentCell));
+
+        if (GetDirection(bridgeObject, currentCell) == bridgeObject.direction)
+        {
+            currentLine.sortingOrder = SortingLayers.UPPER_LINE;
+        }
+        else
+        {
+            currentLine.sortingOrder = SortingLayers.LINE;
+        }
+
+        ContinueLine(currentLine, CellPositionToVector3(bridgeObject.cell.gridPosition), bridgeObject.cell);
+    }
+
+    private BridgeObject.Direction GetDirection(BridgeObject bridge, CellData currentCell)
+    {
+        CellData bridgeCell = bridge.cell;
+        Vector2Int positionCalculation = currentCell.gridPosition - bridgeCell.gridPosition;
+        Vector2Int nextCellDirection = new(Mathf.Abs(positionCalculation.x), Mathf.Abs(positionCalculation.y));
+
+        if (nextCellDirection == Vector2Int.up)
+        {
+            return BridgeObject.Direction.Vertical;
+        }
+        else
+        {
+            return BridgeObject.Direction.Horizontal;
+        }
+    }
+
+    private Vector3Int CellPositionToVector3(Vector2Int position)
+    {
+        return new(position.x, position.y, 0);
     }
 }

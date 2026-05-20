@@ -4,6 +4,11 @@ public class DotInObject : _CellObject
 {
     public override bool OnLineEnter(LineManager line)
     {
-        return false;
+        bool canContinueLine;
+
+        line.EnterDotIn(this);
+
+        canContinueLine = false;
+        return canContinueLine;
     }
 }

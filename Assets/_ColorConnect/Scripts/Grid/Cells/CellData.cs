@@ -6,7 +6,7 @@ public class CellData
     public Vector2Int gridPosition;
     public bool isPassable;
     public List<LineRenderer> lines;
-    public GameObject containedObject;
+    public _CellObject containedObject;
 
     public CellData()
     {

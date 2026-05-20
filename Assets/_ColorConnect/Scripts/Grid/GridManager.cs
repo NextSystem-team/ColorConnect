@@ -37,7 +37,7 @@ public class GridManager : MonoBehaviour
                     GameObject dotIn = Instantiate(dotInPrefab);
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
-                    gridData[x, y].containedObject = dotIn;
+                    //gridData[x, y].containedObject = dotIn;
                 }
                 else if (x == rows - 1 && y == columns - 4)
                 {
@@ -45,7 +45,7 @@ public class GridManager : MonoBehaviour
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotIn.GetComponent<Dot>().SetColor(Color.blue);
-                    gridData[x, y].containedObject = dotIn;
+                    //gridData[x, y].containedObject = dotIn;
                 } else if (x == 3 && y == 0)
                 {
                     GameObject dotOut = Instantiate(dotOutPrefab);

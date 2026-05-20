@@ -74,7 +74,7 @@ public class LineManager : MonoBehaviour
                 currentLine.SetPosition(currentLine.positionCount - 1, grid.Grid.GetCellCenterWorld(gridPosition));
 
                 cell.lines.Add(currentLine);
-                GameObject cellObject = cell.containedObject;
+                _CellObject cellObject = cell.containedObject;
 
                 if (cellObject && cellObject.CompareTag("DotIn"))
                 {

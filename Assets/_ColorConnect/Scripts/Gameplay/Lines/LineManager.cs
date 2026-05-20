@@ -74,10 +74,13 @@ public class LineManager : MonoBehaviour
                 cell.lines.Add(currentLine);
 
                 Collider2D hit = Physics2D.OverlapPoint(worldPoint);
+                print(hit);
                 if (hit)
                 {
                     if (hit.transform.CompareTag("DotIn"))
                     {
+                        print("DotIn encontrado");
+
                         Dot dotIn = hit.GetComponent<Dot>();
 
                         if (dotIn.GetColor() == currentColor)

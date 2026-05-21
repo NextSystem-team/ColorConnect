@@ -7,7 +7,7 @@ public class Dot : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
-    private void Awake()
+    private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
@@ -24,5 +24,10 @@ public class Dot : MonoBehaviour
     public Color GetColor()
     {
         return color;
+    }
+
+    public void SetColor(Color color)
+    {
+        this.color = color;
     }
 }

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7339931648783192370}
   - component: {fileID: 7616550977108213710}
   - component: {fileID: 7785586337536622132}
+  - component: {fileID: -233837264773571607}
   m_Layer: 0
   m_Name: DotOut
   m_TagString: DotOut
@@ -152,3 +153,15 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.3, y: 1.3}
   m_EdgeRadius: 0
+--- !u!114 &-233837264773571607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7872894873654976388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd1c1aaf95d0d29489f1998fb4d26dc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DotOutObject

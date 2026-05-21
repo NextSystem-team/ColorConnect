@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LineManager
   mainCamera: {fileID: 519420031}
-  grid: {fileID: 180715788}
+  gridManager: {fileID: 180715788}
   linePrefab: {fileID: 6164050028336002284, guid: 086838d7ee71aed4889c0d51f63965f5, type: 3}
 --- !u!1 &60286737
 GameObject:
@@ -307,6 +307,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 92705036}
+  - component: {fileID: 92705037}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -444,6 +445,7 @@ MonoBehaviour:
   margin: 1
   dotOutPrefab: {fileID: 7872894873654976388, guid: 0013b82c114e9aa479e7dd03725da1ef, type: 3}
   dotInPrefab: {fileID: 7189387129639374400, guid: fea0d791ec2847b4aa06419605935a68, type: 3}
+  bridgePrefab: {fileID: 9008465350103101559, guid: 47c8021a2336c594da859d6792853d04, type: 3}
 --- !u!156049354 &180715789
 Grid:
   m_ObjectHideFlags: 0
@@ -601,7 +603,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

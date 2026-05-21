@@ -1,4 +1,6 @@
+using Unity.VectorGraphics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class StageManager : MonoBehaviour
@@ -12,6 +14,12 @@ public class StageManager : MonoBehaviour
         timePassed += Time.deltaTime;
 
         timer.text = DisplayTime(timePassed);
+
+        if (dotsConnected >= 2)
+        {
+            Time.timeScale = 1;
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 
     private string DisplayTime(float time)

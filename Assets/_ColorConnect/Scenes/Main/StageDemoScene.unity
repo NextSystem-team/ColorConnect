@@ -164,8 +164,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LineManager
   mainCamera: {fileID: 519420031}
-  grid: {fileID: 180715788}
+  gridManager: {fileID: 180715788}
   linePrefab: {fileID: 6164050028336002284, guid: 086838d7ee71aed4889c0d51f63965f5, type: 3}
+  stageManager: {fileID: 92705037}
 --- !u!1 &92705035
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,6 +176,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 92705036}
+  - component: {fileID: 92705037}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -198,6 +200,19 @@ Transform:
   - {fileID: 50257051}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &92705037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 92705035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c2e66216e013444b83e6a928b6da2bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StageManager
+  dotsConnected: 0
 --- !u!1 &180715787
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,6 +248,7 @@ MonoBehaviour:
   margin: 1
   dotOutPrefab: {fileID: 7872894873654976388, guid: 0013b82c114e9aa479e7dd03725da1ef, type: 3}
   dotInPrefab: {fileID: 7189387129639374400, guid: fea0d791ec2847b4aa06419605935a68, type: 3}
+  bridgePrefab: {fileID: 9008465350103101559, guid: 47c8021a2336c594da859d6792853d04, type: 3}
 --- !u!156049354 &180715789
 Grid:
   m_ObjectHideFlags: 0
@@ -310,7 +326,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

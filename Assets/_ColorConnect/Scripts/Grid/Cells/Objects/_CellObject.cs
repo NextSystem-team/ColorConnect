@@ -12,4 +12,9 @@ public abstract class _CellObject : MonoBehaviour
         canContinueLine = true;
         return canContinueLine;
     }
+
+    public virtual bool CanContinueLine(LineManager line, bool isBackTracking)
+    {
+        return cell.lines.Count == 0;
+    }
 }

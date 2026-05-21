@@ -1,19 +1,30 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 public class LineManager : MonoBehaviour 
 { 
+    class PathStep
+    {
+        public CellData cell;
+        public LineRenderer segment;
+    }
+
     [SerializeField] private Camera mainCamera; 
     [SerializeField] private GridManager gridManager;
     [SerializeField] private LineRenderer linePrefab;
     
-    private LineRenderer currentLine; 
+    public LineRenderer LineBeingUsed { get; private set; }
+    private Dot currentDotOut;
     private Color currentColor;
     private CellData currentCell;
     private CellData[] currentAdjacentCells;
-    private List<CellData> cellsPassed;
+    private List<LineRenderer> currentLines;
+    private List<PathStep> path;
 
     private bool inBridge = false;
+    private BridgeObject currentBridge;
+    private BridgeObject.Direction currentBridgeTraversal;
 
     [SerializeField] private StageManager stageManager;
     
@@ -33,44 +44,103 @@ public class LineManager : MonoBehaviour
             
             if (hit) { 
                 if (hit.transform.CompareTag("DotOut")) {
-
-                    print("Toque em DotOut detectado"); 
-                    
-                    Dot dotOut = hit.GetComponent<Dot>();
-                    if (dotOut.Line == null)
+                    currentDotOut = hit.GetComponent<Dot>();
+                    if (currentDotOut.Line == null)
                     {
-                        currentColor = dotOut.GetColor();
+                        currentColor = currentDotOut.GetColor();
 
                         Vector2Int gridPosition = new(gridManager.Grid.WorldToCell(worldPoint).x, gridManager.Grid.WorldToCell(worldPoint).y); 
                         CellData starterCell = gridManager.GetCellData(gridPosition);
                      
                         currentAdjacentCells = gridManager.GetAdjacentCellData(gridPosition);
 
-                        currentLine = StartLine(currentColor, gridPosition, transform);
-                        dotOut.Line = currentLine;
+                        path = new List<PathStep>();
+                        currentLines = new List<LineRenderer>();
 
-                        starterCell.lines.Add(currentLine);
-                        cellsPassed = new List<CellData>();
-                        cellsPassed.Add(starterCell);
+                        LineBeingUsed = StartNewLine(
+                                            currentColor, 
+                                            gridPosition, 
+                                            currentDotOut.transform, 
+                                            starterCell
+                                        );
+
+                        path.Add(new PathStep
+                        {
+                            cell = starterCell,
+                            segment = LineBeingUsed
+                        });
+
+                        currentDotOut.Line = LineBeingUsed;
 
                         currentCell = starterCell;
                     }
                 } 
             } 
         } 
-        else if (touch.phase == TouchPhase.Moved && currentLine != null) 
+        else if (touch.phase == TouchPhase.Moved && LineBeingUsed != null) 
         { 
             Vector2 worldPoint = mainCamera.ScreenToWorldPoint(touch.position);
             Vector3Int gridPosition = gridManager.Grid.WorldToCell(worldPoint);
 
-            int currentCellIndex = cellsPassed.IndexOf(currentCell);
             CellData cell = gridManager.GetCellData(new Vector2Int(gridPosition.x, gridPosition.y));
 
-            if (cell == null) return;
+            if (cell == null ||
+                cell == currentCell ||
+                !currentAdjacentCells.Contains(cell))
+                return;
 
-            if (cell != currentCell && 
-                !cell.lines.Contains(currentLine) && 
-                currentAdjacentCells.Contains(cell)) 
+            int currentLineCount = LineBeingUsed.positionCount;
+            bool isBacktracking = path.Count >= 2 && cell == path[^2].cell;
+
+            if (inBridge)
+            {
+                bool isLeavingBridge = currentCell == currentBridge.cell;
+
+                if (GetDirection(cell, currentCell) != currentBridgeTraversal)
+                {
+                    return;
+                }
+                else if (isLeavingBridge)
+                {
+                    currentBridge = null;
+                    inBridge = false;
+                }
+            }
+
+            if (isBacktracking)
+            {
+                if (cell.containedObject)
+                {
+                    cell.containedObject.OnLineEnter(this);
+                }
+
+                PathStep removedStep = path[^1];
+
+                removedStep.segment.positionCount--;
+
+                bool stillUsesSegment = path.Any(path => path != removedStep &&
+                                                         path.cell == removedStep.cell &&
+                                                         path.segment == removedStep.segment);
+
+                if (!stillUsesSegment)
+                {
+                    removedStep.cell.lines.Remove(removedStep.segment);
+                }
+
+                path.RemoveAt(path.Count - 1);
+
+                PathStep currentStep = path[^1];
+                LineBeingUsed = currentStep.segment;
+                currentCell = currentStep.cell;
+                currentAdjacentCells = gridManager.GetAdjacentCellData(cell.gridPosition);
+
+                if (removedStep.segment.positionCount < 1)
+                {
+                    currentLines.Remove(removedStep.segment);
+                    Destroy(removedStep.segment.gameObject);
+                }
+            } 
+            else if (cell.CanPass(this, isBacktracking)) 
             {
                 _CellObject cellObject = cell.containedObject;
 
@@ -78,56 +148,55 @@ public class LineManager : MonoBehaviour
                 {
                     if (cell.containedObject.OnLineEnter(this))
                     {
-                        ContinueLine(currentLine, gridManager.Grid.GetCellCenterWorld(gridPosition), cell);
+                        ContinueLine(
+                            LineBeingUsed, 
+                            gridManager.Grid.GetCellCenterWorld(gridPosition), 
+                            cell
+                        );
                     }
                 }
                 else
                 {
-                    ContinueLine(currentLine, gridManager.Grid.GetCellCenterWorld(gridPosition), cell);
+                    ContinueLine(
+                        LineBeingUsed, 
+                        gridManager.Grid.GetCellCenterWorld(gridPosition), 
+                        cell
+                    );
                 }
 
-                if (currentCell != null)
+                if (currentCell != null && currentLineCount != LineBeingUsed.positionCount)
                 {
-                    cellsPassed.Add(cell);
                     currentCell = cell;
                     currentAdjacentCells = gridManager.GetAdjacentCellData(cell.gridPosition);
                 }
-            }
-            else if (cell != currentCell && 
-                     currentAdjacentCells.Contains(cell) && 
-                     cell.lines.Contains(currentLine) && 
-                     cell == cellsPassed[currentCellIndex-1])
-            {
-                currentLine.positionCount--;
-                currentCell.lines.Remove(currentLine);
-                cellsPassed.Remove(currentCell);
-
-                currentCell = cell;
-                currentAdjacentCells = gridManager.GetAdjacentCellData(cell.gridPosition);
             }
 
         } 
         else if (touch.phase == TouchPhase.Ended) 
         {
-            if (currentLine != null)
+            if (LineBeingUsed != null)
             {
-                foreach (var cell in cellsPassed)
+                foreach (var pathStep in path)
                 {
-                    cell.lines.Remove(currentLine);
+                    pathStep.cell.lines.Remove(pathStep.segment);
                 }
 
-                Destroy(currentLine.gameObject);
+                foreach (var line in currentLines)
+                {
+                    Destroy(line.gameObject);
+                }
 
+                currentDotOut = null;
                 currentColor = default;
-                currentLine = null;
+                LineBeingUsed = null;
                 currentCell = null;
+                currentLines = null;
+                path = null;
             }
-
-            print("Toque finalizado"); 
         } 
     } 
 
-    private LineRenderer StartLine(Color color, Vector2Int startPosition, Transform parent)
+    private LineRenderer StartNewLine(Color color, Vector2Int startPosition, Transform parent, CellData starterCell)
     {
         Vector3Int starterCellCenter = new(startPosition.x, startPosition.y, 0);
         Vector3 lineStartPosition = gridManager.Grid.GetCellCenterWorld(starterCellCenter);
@@ -140,6 +209,11 @@ public class LineManager : MonoBehaviour
 
         newLine.SetPosition(0, lineStartPosition);
 
+        currentLines.Add(newLine);
+
+        newLine.name = $"Line_{color.ToHexString()}_({currentLines.IndexOf(newLine)})";
+        starterCell.lines.Add(newLine);
+
         return newLine;
     }
 
@@ -147,29 +221,42 @@ public class LineManager : MonoBehaviour
         line.positionCount++;
         line.SetPosition(line.positionCount - 1, newPosition);
 
-        cell.lines.Add(line);
+        if (!cell.lines.Contains(line))
+        {
+            cell.lines.Add(line);
+        }
+
+        path.Add(new PathStep
+        {
+            cell = cell,
+            segment = line
+        });
     }
 
     private void ResetLine()
     {
-        currentLine = null;
+        currentDotOut = null;
+        LineBeingUsed = null;
         currentColor = default;
-        cellsPassed = new List<CellData>();
         currentCell = null;
         currentAdjacentCells = null;
+        currentLines = null;
+        path = null;
     }
 
     public void EnterDotIn(DotInObject dotInObject)
     {
-        print("DotIn encontrado");
-
         Dot dotIn = dotInObject.GetComponent<Dot>();
 
         if (dotIn.GetColor() == currentColor)
         {
-            ContinueLine(currentLine, CellPositionToVector3(dotInObject.cell.gridPosition), dotInObject.cell);
+            ContinueLine(
+                LineBeingUsed, 
+                CellPositionToVector3(dotInObject.cell.gridPosition), 
+                dotInObject.cell
+            );
 
-            dotIn.Line = currentLine;
+            dotIn.Line = LineBeingUsed;
 
             ResetLine();
 
@@ -179,25 +266,38 @@ public class LineManager : MonoBehaviour
 
     public void EnterBridge(BridgeObject bridgeObject)
     {
-        print(bridgeObject.direction);
-        print(GetDirection(bridgeObject, currentCell));
+        BridgeObject.Direction movementDirection =
+        GetDirection(
+            bridgeObject.cell,
+            currentCell
+        );
 
-        if (GetDirection(bridgeObject, currentCell) == bridgeObject.direction)
+        bool shouldBeUpper = movementDirection == bridgeObject.direction;
+
+        int targetSorting = shouldBeUpper ? 
+                            SortingLayers.UPPER_LINE
+                          : SortingLayers.LINE;
+
+        if (LineBeingUsed.sortingOrder != targetSorting)
         {
-            currentLine.sortingOrder = SortingLayers.UPPER_LINE;
-        }
-        else
-        {
-            currentLine.sortingOrder = SortingLayers.LINE;
+            LineBeingUsed = StartNewLine(
+                currentColor,
+                currentCell.gridPosition,
+                currentDotOut.transform,
+                bridgeObject.cell
+            );
+
+            LineBeingUsed.sortingOrder = targetSorting;
         }
 
-        ContinueLine(currentLine, CellPositionToVector3(bridgeObject.cell.gridPosition), bridgeObject.cell);
+        currentBridgeTraversal = movementDirection;
+        currentBridge = bridgeObject;
+        inBridge = true;
     }
 
-    private BridgeObject.Direction GetDirection(BridgeObject bridge, CellData currentCell)
+    private BridgeObject.Direction GetDirection(CellData nextCell, CellData currentCell)
     {
-        CellData bridgeCell = bridge.cell;
-        Vector2Int positionCalculation = currentCell.gridPosition - bridgeCell.gridPosition;
+        Vector2Int positionCalculation = currentCell.gridPosition - nextCell.gridPosition;
         Vector2Int nextCellDirection = new(Mathf.Abs(positionCalculation.x), Mathf.Abs(positionCalculation.y));
 
         if (nextCellDirection == Vector2Int.up)
@@ -209,9 +309,9 @@ public class LineManager : MonoBehaviour
             return BridgeObject.Direction.Horizontal;
         }
     }
-
-    private Vector3Int CellPositionToVector3(Vector2Int position)
+        
+    private Vector3 CellPositionToVector3(Vector2Int position)
     {
-        return new(position.x, position.y, 0);
+        return gridManager.Grid.GetCellCenterWorld(new Vector3Int(position.x, position.y, 0));
     }
 }

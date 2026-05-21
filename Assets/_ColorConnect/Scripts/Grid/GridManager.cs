@@ -12,6 +12,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject dotInPrefab;
     [SerializeField] private GameObject bridgePrefab;
 
+    [SerializeField] private GameObject gridBackground;
+
     public Grid Grid { get; private set; }
     private CellData[,] gridData; //posições do grid
 
@@ -79,6 +81,7 @@ public class GridManager : MonoBehaviour
 
         CenterGrid();
         FitGridInCamera();
+        CreateAndResizeBackground();
     }
 
     private void CenterGrid()
@@ -152,30 +155,47 @@ public class GridManager : MonoBehaviour
         return adjacentCells;
     }
 
-    //Debug pré assets
-    private void OnDrawGizmos()
+    private void CreateAndResizeBackground()
     {
-        if (Grid == null)
-            Grid = GetComponent<Grid>();
+        if (gridBackground == null) return;
 
-        if (gridData == null) return;
+        GameObject bgInstance = Instantiate(gridBackground, transform);
+        bgInstance.name = "Grid_Background";
 
-        for (int y = 0; y < rows; y++)
-        {
-            for (int x = 0; x < columns; x++)
-            {
-                Vector3 worldPosition =
-                    Grid.CellToWorld(
-                        new Vector3Int(x, y, 0)
-                    ) + (Grid.cellSize / 2f);
+        SpriteRenderer sr = bgInstance.GetComponent<SpriteRenderer>();
 
-                Gizmos.color = Color.green;
+        // tamanho REAL ocupado pelas células
+        float gridWidth =
+            ((columns - 1) * (Grid.cellSize.x + Grid.cellGap.x))
+            + Grid.cellSize.x;
 
-                Gizmos.DrawCube(
-                    worldPosition,
-                    Grid.cellSize * 0.9f
-                );
-            }
-        }
+        float gridHeight =
+            ((rows - 1) * (Grid.cellSize.y + Grid.cellGap.y))
+            + Grid.cellSize.y;
+
+        // pega a primeira e última célula
+        Vector3 bottomLeft =
+            Grid.GetCellCenterWorld(new Vector3Int(0, 0, 0));
+
+        Vector3 topRight =
+            Grid.GetCellCenterWorld(new Vector3Int(columns - 1, rows - 1, 0));
+
+        // centro exato entre elas
+        Vector3 center = (bottomLeft + topRight) / 2f;
+
+        bgInstance.transform.position = new Vector3(
+            center.x,
+            center.y,
+            1f
+        );
+
+        // escala sprite
+        Vector2 spriteSize = sr.sprite.bounds.size;
+
+        bgInstance.transform.localScale = new Vector3(
+            gridWidth / spriteSize.x,
+            gridHeight / spriteSize.y,
+            1f
+        );
     }
 }

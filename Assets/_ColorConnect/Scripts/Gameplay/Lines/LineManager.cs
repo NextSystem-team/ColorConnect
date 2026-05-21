@@ -26,11 +26,13 @@ public class LineManager : MonoBehaviour
     private BridgeObject currentBridge;
     private BridgeObject.Direction currentBridgeTraversal;
 
+    public bool canCreateLine = true;
+
     [SerializeField] private StageManager stageManager;
     
     private void Update() 
     { 
-        if (Input.touchCount == 0) return; 
+        if (Input.touchCount == 0 || !canCreateLine) return; 
         
         LineCreator(); 
     } 

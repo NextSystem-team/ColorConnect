@@ -1,25 +1,17 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class StageManager : MonoBehaviour
 {
     public int dotsConnected;
     private float timePassed;
-
-    private bool canTimePass = true;
-
-    private void Start()
-    {
-        Time.timeScale = 100.0f;
-    }
+    [SerializeField] private Text timer;
 
     private void Update()
     {
-        //if (canTimePass)
-        //{
-        //    timePassed += Time.deltaTime;
+        timePassed += Time.deltaTime;
 
-        //    print(DisplayTime(timePassed));
-        //}
+        timer.text = DisplayTime(timePassed);
     }
 
     private string DisplayTime(float time)
@@ -36,7 +28,7 @@ public class StageManager : MonoBehaviour
 
         if (hours <= 0)
         {
-            timer = minutes.ToString("00") + ":" + seconds.ToString("00");
+            timer = minutes.ToString("0") + ":" + seconds.ToString("00");
         }
         else
         {

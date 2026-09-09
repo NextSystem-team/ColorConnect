@@ -10,5 +10,17 @@ public class SceneChanger : MonoBehaviour
     {
         Time.timeScale = 1;
         SceneManager.LoadScene(sceneName);
+        
+        if(sceneName == "MainMenu")
+        {
+            ShowAds();
+        }
+    }
+
+    void ShowAds()
+    {
+        GameObject.Find("AdsInitializer").GetComponent<AdsInitializer>().LoadInterstitialAd();
+        GameObject.Find("AdsInitializer").GetComponent<AdsInitializer>().ShowInterstitialAd();
+
     }
 }

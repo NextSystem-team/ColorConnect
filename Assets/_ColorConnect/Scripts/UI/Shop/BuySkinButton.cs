@@ -55,14 +55,13 @@ public class BuySkinButton : MonoBehaviour, IPointerClickHandler
 
         if (currentTime - lastClickTime <= doubleClickTime)
         {
-            // Double-click / Double-tap
+            
             HandleDoubleClick();
 
             lastClickTime = -1f;
         }
         else
         {
-            // Primeiro clique/toque
             lastClickTime = currentTime;
         }
     }
@@ -159,6 +158,7 @@ public class BuySkinButton : MonoBehaviour, IPointerClickHandler
                 {
                     GameManager.Instance.money -= skin.price;
                     GameManager.Instance.AddSkin(skin);
+                    skinListManager.UpdateMoney();
                     skinListManager.UpdateSkinButtons();
                     SetState(SkinButtonState.Equipped);
                 }

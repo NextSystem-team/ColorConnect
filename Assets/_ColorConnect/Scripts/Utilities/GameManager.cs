@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
 
     public int money;
 
-    public bool usingSkin;
+    public bool isUsingSkin;
     public Skin currentSkin;
     public List<Skin> collectedSkins = new List<Skin>();
 
@@ -31,12 +31,12 @@ public class GameManager : MonoBehaviour
     {
         if (skin == null) 
         {
-            usingSkin = false;
+            isUsingSkin = false;
         }
         else
         {
             currentSkin = skin;
-            usingSkin = true;
+            isUsingSkin = true;
         }
     }
 

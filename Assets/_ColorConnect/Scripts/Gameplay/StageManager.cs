@@ -18,6 +18,7 @@ public class StageManager : MonoBehaviour
         if (dotsConnected >= 2)
         {
             Time.timeScale = 1;
+            GameManager.Instance.money += 500;
             SceneManager.LoadScene("MainMenu");
         }
     }
@@ -44,5 +45,18 @@ public class StageManager : MonoBehaviour
         }
 
         return timer;
+    }
+
+    public void ResetStage()
+    {
+        GameManager.Instance.resetCountToAd++;
+        if (GameManager.Instance.resetCountToAd >= 5)
+        {
+            AdsInitializer.Instance.GetInterstitialAd();
+            GameManager.Instance.resetCountToAd = 0;
+        }
+
+        Time.timeScale = 1;
+        SceneManager.LoadScene("StageDemoScene");
     }
 }

@@ -15,7 +15,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject gridBackground;
 
     public Grid Grid { get; private set; }
-    private CellData[,] gridData; //posições do grid
+    private CellData[,] gridData; //posiï¿½ï¿½es do grid
+
+    private GameManager gm = GameManager.Instance;
 
     private void Start()
     {
@@ -28,16 +30,27 @@ public class GridManager : MonoBehaviour
             {
                 Vector2Int currentTilePosition = new(x, y);
                 gridData[x, y] = new CellData(currentTilePosition);
-                //Cria uma célula na posição atual do grid
+                //Cria uma cï¿½lula na posiï¿½ï¿½o atual do grid
 
                 if (x == 0 && y == 0)
                 {
                     GameObject dotOut = Instantiate(dotOutPrefab);
+                    if (gm.isUsingSkin)
+                    {
+                        SpriteRenderer dotRenderer = dotOut.GetComponent<SpriteRenderer>();
+                        dotRenderer.sprite = gm.currentSkin.skinDotSprite;
+                    }
                     dotOut.transform.parent = transform;
                     dotOut.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
-                }else if (x == rows-1 && y == columns-1)
+                }
+                else if (x == rows - 1 && y == columns - 1)
                 {
                     GameObject dotIn = Instantiate(dotInPrefab);
+                    if (gm.isUsingSkin)
+                    {
+                        SpriteRenderer dotRenderer = dotIn.GetComponent<SpriteRenderer>();
+                        dotRenderer.sprite = gm.currentSkin.skinDotSprite;
+                    }
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotIn.GetComponent<_CellObject>().cell = gridData[x, y];
@@ -46,19 +59,29 @@ public class GridManager : MonoBehaviour
                 else if (x == rows - 1 && y == columns - 4)
                 {
                     GameObject dotIn = Instantiate(dotInPrefab);
+                    if (gm.isUsingSkin)
+                    {
+                        SpriteRenderer dotRenderer = dotIn.GetComponent<SpriteRenderer>();
+                        dotRenderer.sprite = gm.currentSkin.skinDotSprite;
+                    }
                     dotIn.transform.parent = transform;
                     dotIn.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotIn.GetComponent<Dot>().SetColor(Color.blue);
                     dotIn.GetComponent<_CellObject>().cell = gridData[x, y];
                     gridData[x, y].containedObject = dotIn.GetComponent<_CellObject>();
-                } 
+                }
                 else if (x == 3 && y == 0)
                 {
                     GameObject dotOut = Instantiate(dotOutPrefab);
+                    if (gm.isUsingSkin)
+                    {
+                        SpriteRenderer dotRenderer = dotOut.GetComponent<SpriteRenderer>();
+                        dotRenderer.sprite = gm.currentSkin.skinDotSprite;
+                    }
                     dotOut.transform.parent = transform;
                     dotOut.transform.position = Grid.GetCellCenterWorld(new Vector3Int(x, y, 0));
                     dotOut.GetComponent<Dot>().SetColor(Color.blue);
-                } 
+                }
                 else if (x == 2 && y == 4)
                 {
                     GameObject bridge = Instantiate(bridgePrefab);
@@ -87,10 +110,10 @@ public class GridManager : MonoBehaviour
     private void CenterGrid()
     {
         float gridWidth =
-            (columns * Grid.cellSize.x) + //Calcula a largura total da célula
-            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaços entre as células
+            (columns * Grid.cellSize.x) + //Calcula a largura total da cï¿½lula
+            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaï¿½os entre as cï¿½lulas
 
-        float gridHeight = 
+        float gridHeight =
             (rows * Grid.cellSize.y) +
             ((rows - 1) * Grid.cellGap.y);
 
@@ -99,17 +122,17 @@ public class GridManager : MonoBehaviour
             gridHeight / 2f,
             0f
 
-            //(2f - grid.cellSize.x) serve para poder centralizar de verdade o "pivot" da célula)
+        //(2f - grid.cellSize.x) serve para poder centralizar de verdade o "pivot" da cï¿½lula)
         );
 
-        transform.position = -gridCenterOffset; //Move o grid toda para trás considerando o tamanho das células
+        transform.position = -gridCenterOffset; //Move o grid toda para trï¿½s considerando o tamanho das cï¿½lulas
     }
 
     public void FitGridInCamera()
     {
         float gridWidth =
-            (columns * Grid.cellSize.x) + //Calcula a largura total da célula
-            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaços entre as células
+            (columns * Grid.cellSize.x) + //Calcula a largura total da cï¿½lula
+            ((columns - 1) * Grid.cellGap.x); //Calcula a largura total dos espaï¿½os entre as cï¿½lulas
 
         float gridHeight =
             (rows * Grid.cellSize.y) +
@@ -119,17 +142,17 @@ public class GridManager : MonoBehaviour
             (float)UnityEngine.Device.Screen.width / UnityEngine.Device.Screen.height; //Pega o centro da tela
 
         float targetHeight =
-            gridHeight / 2f; //Diz onde é pra centralizar verticalmente
+            gridHeight / 2f; //Diz onde ï¿½ pra centralizar verticalmente
 
         float targetWidth =
-            (gridWidth / screenRatio) / 2f; //Diz onde é pra centralizar horizontalmente
+            (gridWidth / screenRatio) / 2f; //Diz onde ï¿½ pra centralizar horizontalmente
 
         Camera.main.orthographicSize =
-            Mathf.Max(targetHeight, targetWidth) + margin; //Ajusta o tamanho ortográfico da câmera para garantir que o grid caiba na tela,
-                                                           //adicionando uma margem para não ficar tão apertado
+            Mathf.Max(targetHeight, targetWidth) + margin; //Ajusta o tamanho ortogrï¿½fico da cï¿½mera para garantir que o grid caiba na tela,
+                                                           //adicionando uma margem para nï¿½o ficar tï¿½o apertado
 
-        //Mathf.Max é usado para garantir que a câmera seja grande o suficiente para mostrar toda a grade,
-        //independentemente da proporção da tela.
+        //Mathf.Max ï¿½ usado para garantir que a cï¿½mera seja grande o suficiente para mostrar toda a grade,
+        //independentemente da proporï¿½ï¿½o da tela.
         //Ele escolhe o maior valor entre targetHeight e targetWidth para garantir que ambos os eixos sejam adequadamente ajustados.
     }
 
@@ -138,7 +161,7 @@ public class GridManager : MonoBehaviour
         if (gridPosition.x < 0 || gridPosition.x >= columns ||
             gridPosition.y < 0 || gridPosition.y >= rows)
         {
-            return null; // Retorna null se a posição estiver fora dos limites do grid
+            return null; // Retorna null se a posiï¿½ï¿½o estiver fora dos limites do grid
         }
 
         return gridData[gridPosition.x, gridPosition.y];
@@ -164,7 +187,7 @@ public class GridManager : MonoBehaviour
 
         SpriteRenderer sr = bgInstance.GetComponent<SpriteRenderer>();
 
-        // tamanho REAL ocupado pelas células
+        // tamanho REAL ocupado pelas cï¿½lulas
         float gridWidth =
             ((columns - 1) * (Grid.cellSize.x + Grid.cellGap.x))
             + Grid.cellSize.x;
@@ -173,7 +196,7 @@ public class GridManager : MonoBehaviour
             ((rows - 1) * (Grid.cellSize.y + Grid.cellGap.y))
             + Grid.cellSize.y;
 
-        // pega a primeira e última célula
+        // pega a primeira e ï¿½ltima cï¿½lula
         Vector3 bottomLeft =
             Grid.GetCellCenterWorld(new Vector3Int(0, 0, 0));
 

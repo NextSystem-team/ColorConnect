@@ -26,10 +26,12 @@ public class LineManager : MonoBehaviour
     private BridgeObject currentBridge;
     private BridgeObject.Direction currentBridgeTraversal;
 
+    private GameManager gm = GameManager.Instance;
+
     public bool canCreateLine = true;
 
     [SerializeField] private StageManager stageManager;
-    
+
     private void Update() 
     { 
         if (Input.touchCount == 0 || !canCreateLine) return; 
@@ -200,6 +202,8 @@ public class LineManager : MonoBehaviour
 
     private LineRenderer StartNewLine(Color color, Vector2Int startPosition, Transform parent, CellData starterCell)
     {
+        MaterialPropertyBlock propertyBlock = new();
+
         Vector3Int starterCellCenter = new(startPosition.x, startPosition.y, 0);
         Vector3 lineStartPosition = gridManager.Grid.GetCellCenterWorld(starterCellCenter);
 
@@ -208,6 +212,20 @@ public class LineManager : MonoBehaviour
         newLine.transform.position = lineStartPosition;
         newLine.startColor = color;
         newLine.endColor = color;
+
+        newLine.GetPropertyBlock(propertyBlock);
+        propertyBlock.SetColor("_LineColor", color);
+
+        if (gm.isUsingSkin)
+        {
+            Skin currentSkin = gm.currentSkin;
+            propertyBlock.SetTexture("_SkinTexture", currentSkin.skinLineTexture);
+        }else
+        {
+            propertyBlock.SetInt("_UseSkin", 0);;
+        }
+
+        newLine.SetPropertyBlock(propertyBlock);
 
         newLine.SetPosition(0, lineStartPosition);
 
